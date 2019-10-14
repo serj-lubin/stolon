@@ -9,7 +9,7 @@ secrets:
 services:
   sentinel:
     image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul:8500 --log-level debug
+    command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul_server-bootstrap:8500 --log-level debug
     networks:
       - core
       - pgdb
@@ -60,7 +60,7 @@ services:
 
   proxy:
     image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul:8500 --log-level info
+    command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul_server-bootstrap:8500 --log-level info
     networks:
       - core
       - pgdb
