@@ -7,12 +7,12 @@ secrets:
     file: ./etc/secrets/pgsql_repl
 
 services:
-   server-bootstrap:
-    image: consul:1.2.1
-    ports:
-      - 8500:8500
-    command: "agent -server -bootstrap-expect 3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
-    networks:
+  server-bootstrap:
+   image: consul:1.2.1
+   ports:
+     - 8500:8500
+   command: "agent -server -bootstrap-expect 3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+   networks:
       - core
       - pgdb
   server:
