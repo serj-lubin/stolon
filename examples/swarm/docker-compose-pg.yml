@@ -7,6 +7,36 @@ secrets:
     file: ./etc/secrets/pgsql_repl
 
 services:
+   server-bootstrap:
+    image: consul:1.2.1
+    ports:
+      - 8500:8500
+    command: "agent -server -bootstrap-expect 3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    networks:
+      - core
+      - pgdb
+
+  server:
+    image: consul:1.2.1
+    command: "agent -server -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    networks:
+      - core
+      - pgdb
+    deploy:
+      replicas: 2
+    depends_on:
+      - server-bootstrap
+
+  client:
+    image: consul:1.2.1
+    command: "agent -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    networks:
+      - core
+      - pgdb
+    deploy:
+      replicas: 2
+    depends_on:
+      - server-bootstrap 
   sentinel:
     image: sorintlab/stolon:master-pg10
     command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul_server-bootstrap:8500 --log-level debug
@@ -80,6 +110,10 @@ volumes:
   pgkeeper2:
     driver: local
 
+#networks:
+#  default:
+#    external:
+#      name: core
 networks:
   core:
     external: true
