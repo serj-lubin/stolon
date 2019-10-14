@@ -12,8 +12,8 @@ services:
    ports:
      - 8500:8500
    command: "agent -server -bootstrap-expect 3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
-   deploy:
-      replicas: 3
+ #  deploy:
+ #     replicas: 3
    hostname: server-bootstrap
    networks:
       - core
