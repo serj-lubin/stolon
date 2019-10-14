@@ -81,7 +81,7 @@ volumes:
     driver: local
 
 networks:
-  etcd_etcd:
+  core:
     external: true
   pgdb:
     driver: overlay
