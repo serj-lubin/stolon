@@ -9,15 +9,15 @@ secrets:
 services:
   sentinel:
     image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=etcdv3 --store-endpoints http://etcd-00:2379,http://etcd-01:2379,http://etcd-02:2379 --log-level debug
+    command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul:8500 --log-level debug
     networks:
-      - etcd_etcd
+      - core
       - pgdb
     deploy:
       replicas: 2
       update_config:
         parallelism: 1
-        delay: 30s
+        delay: 1s
         order: stop-first
         failure_action: pause
 
@@ -33,7 +33,7 @@ services:
       - pgsql_repl
     command: gosu stolon stolon-keeper --pg-listen-address keeper1 --pg-repl-username replication --uid keeper1 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql_repl --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=etcdv3 --store-endpoints http://etcd-00:2379,http://etcd-01:2379,http://etcd-02:2379 --log-level debug
     networks:
-      - etcd_etcd
+      - core
       - pgdb
     deploy:
       replicas: 1
@@ -51,7 +51,7 @@ services:
       - pgsql
     command: gosu stolon stolon-keeper --pg-listen-address keeper2 --pg-repl-username replication --uid keeper2 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=etcdv3 --store-endpoints http://etcd-00:2379,http://etcd-01:2379,http://etcd-02:2379 --log-level debug
     networks:
-      - etcd_etcd
+      - core
       - pgdb
     deploy:
       replicas: 1
@@ -60,17 +60,17 @@ services:
 
   proxy:
     image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=etcdv3 --store-endpoints http://etcd-00:2379,http://etcd-01:2379,http://etcd-02:2379 --log-level info
+    command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://consul:8500 --log-level info
     networks:
-      - etcd_etcd
+      - core
       - pgdb
     ports:
-      - 5432:5432
+      - 5433:5432
     deploy:
       replicas: 2
       update_config:
         parallelism: 1
-        delay: 30s
+        delay: 3s
         order: stop-first
         failure_action: rollback
 
