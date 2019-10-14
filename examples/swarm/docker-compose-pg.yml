@@ -15,7 +15,6 @@ services:
     networks:
       - core
       - pgdb
-
   server:
     image: consul:1.2.1
     command: "agent -server -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
@@ -26,7 +25,6 @@ services:
       replicas: 2
     depends_on:
       - server-bootstrap
-
   client:
     image: consul:1.2.1
     command: "agent -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
@@ -50,7 +48,6 @@ services:
         delay: 1s
         order: stop-first
         failure_action: pause
-
   keeper1:
     image: sorintlab/stolon:master-pg10
     hostname: keeper1
