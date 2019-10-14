@@ -41,6 +41,8 @@ services:
   sentinel:
     image: sorintlab/stolon:master-pg10
     command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
+    depends_on:
+      - server-bootstrap
     networks:
       - core
       - pgdb
@@ -62,6 +64,8 @@ services:
       - pgsql
       - pgsql_repl
     command: gosu stolon stolon-keeper --pg-listen-address keeper1 --pg-repl-username replication --uid keeper1 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql_repl --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
+    depends_on:
+      - server-bootstrap
     networks:
       - core
       - pgdb
@@ -80,6 +84,8 @@ services:
     secrets:
       - pgsql
     command: gosu stolon stolon-keeper --pg-listen-address keeper2 --pg-repl-username replication --uid keeper2 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
+    depends_on:
+      - server-bootstrap
     networks:
       - core
       - pgdb
@@ -91,6 +97,8 @@ services:
   proxy:
     image: sorintlab/stolon:master-pg10
     command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level info
+    depends_on:
+      - server-bootstrap
     networks:
       - core
       - pgdb
