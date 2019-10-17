@@ -9,7 +9,9 @@ secrets:
 services:
   server1:
     image: consul:1.2.1
-    command: "agent -server -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    ports:
+     - 8501:8500
+    command: "agent -server -retry-join server1 server2 server3 -client 0.0.0.0 -ui -bind '{{ GetInterfaceIP \"eth0\" }}'"
     networks:
       - core
       - pgdb
@@ -19,7 +21,9 @@ services:
      
   server2:
     image: consul:1.2.1
-    command: "agent -server -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    ports:
+     - 8502:8500
+    command: "agent -server -retry-join server1 server2 server3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
     networks:
       - core
       - pgdb
@@ -28,7 +32,9 @@ services:
     
   server3:
     image: consul:1.2.1
-    command: "agent -server -retry-join server-bootstrap -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
+    ports:
+     - 8503:8500
+    command: "agent -server -retry-join server1 server2 server3 -ui -client 0.0.0.0 -bind '{{ GetInterfaceIP \"eth0\" }}'"
     networks:
       - core
       - pgdb
@@ -36,87 +42,7 @@ services:
       replicas: 1
    
 
-  sentinel:
-    image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-sentinel --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
-    
-    networks:
-      - core
-      - pgdb
-    deploy:
-      replicas: 3
-      update_config:
-        parallelism: 1
-        delay: 1s
-        order: stop-first
-        failure_action: pause
-  keeper1:
-    image: sorintlab/stolon:master-pg10
-    hostname: keeper1
-    environment:
-      - PGDATA=/var/lib/postgresql/data
-    volumes:
-      - pgkeeper1:/var/lib/postgresql/data
-    secrets:
-      - pgsql
-      - pgsql_repl
-    command: gosu stolon stolon-keeper --pg-listen-address keeper1 --pg-repl-username replication --uid keeper1 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql_repl --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
-    
-    networks:
-      - core
-      - pgdb
-    deploy:
-      replicas: 3
-#      placement:
-#        constraints: [node.labels.nodename == node1]
-
-  keeper2:
-    image: sorintlab/stolon:master-pg10
-    hostname: keeper2
-    environment:
-      - PGDATA=/var/lib/postgresql/data
-    volumes:
-      - pgkeeper2:/var/lib/postgresql/data
-    secrets:
-      - pgsql
-    command: gosu stolon stolon-keeper --pg-listen-address keeper2 --pg-repl-username replication --uid keeper2 --pg-su-username postgres --pg-su-passwordfile /run/secrets/pgsql --pg-repl-passwordfile /run/secrets/pgsql --data-dir /var/lib/postgresql/data --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level debug
-    
-    networks:
-      - core
-      - pgdb
-    deploy:
-      replicas: 3
-#      placement:
-#        constraints: [node.labels.nodename == node2]
-
-  proxy:
-    image: sorintlab/stolon:master-pg10
-    command: gosu stolon stolon-proxy --listen-address 0.0.0.0 --cluster-name stolon-cluster --store-backend=consul --store-endpoints http://server-bootstrap:8500 --log-level info
-    
-    networks:
-      - core
-      - pgdb
-    ports:
-      - 5433:5432
-    deploy:
-      replicas: 3
-      update_config:
-        parallelism: 1
-        delay: 3s
-        order: stop-first
-        failure_action: rollback
-
-volumes:
-  pgkeeper1:
-    driver: local
-  pgkeeper2:
-    driver: local
-
-#networks:
-#  default:
-#    external:
-#      name: core
-networks:
+  networks:
   core:
     external: true
   pgdb:
