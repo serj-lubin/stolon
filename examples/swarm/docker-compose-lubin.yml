@@ -41,8 +41,7 @@ services:
     deploy:
       replicas: 1
    
-
-  networks:
+networks:
   core:
     external: true
   pgdb:
