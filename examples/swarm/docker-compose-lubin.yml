@@ -40,5 +40,12 @@ services:
       - pgdb
     deploy:
       replicas: 1
-   
+ networks:
+  core:
+    external: true
+  pgdb:
+    driver: overlay
+    driver_opts:
+      encrypted: "true"
+    internal: true  
 
