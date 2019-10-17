@@ -1,11 +1,5 @@
 version: '3.4'
 
-secrets:
-  pgsql:
-    file: ./etc/secrets/pgsql
-  pgsql_repl:
-    file: ./etc/secrets/pgsql_repl
-
 services:
   server1:
     image: consul:1.2.1
@@ -40,7 +34,8 @@ services:
       - pgdb
     deploy:
       replicas: 1
- networks:
+      
+  networks:
   core:
     external: true
   pgdb:
@@ -48,4 +43,3 @@ services:
     driver_opts:
       encrypted: "true"
     internal: true  
-
