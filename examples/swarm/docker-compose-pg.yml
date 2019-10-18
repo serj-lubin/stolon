@@ -99,7 +99,7 @@ services:
       - core
       - pgdb
     ports:
-      - 5433:5432
+      - 5432:5432
     deploy:
       replicas: 3
       update_config:
